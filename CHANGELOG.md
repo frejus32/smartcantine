@@ -3,6 +3,43 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement par sprint.
 Chaque entrée liste les nouveaux fichiers, les fichiers modifiés, les migrations et les commandes.
 
+## [Sprint 3.5 — Banc d'essai du moteur] — 2026-07-15
+
+### Ajouté
+- **Contrat unique `ScanVerdict`** (`src/lib/scan/verdict.ts`) : schéma Zod du verdict
+  du moteur, `parseScanVerdict()` (validation stricte), `VERDICT_META` (mot / couleur),
+  `detailVerdict()`. Toute interface future (scanner web, mobile, API) passe par lui.
+- **Structure du QR Code v1** (`src/lib/qr/payload.ts`) : contenu minimal
+  `version + schoolId + studentId` au format `SC1:<schoolId>:<studentId>` ;
+  `encodeQrPayload()` / `decodeQrPayload()` validés Zod ; 4e segment réservé à la
+  signature Ed25519 (Sprint 3B). Aucune donnée personnelle ni périmable dans le badge.
+- **Service pont** (`src/services/moteur.service.ts`) : wrappers RPC des fonctions
+  métier + lectures (élèves, passages, grand livre). Zéro logique métier côté client.
+- **Page `/banc-essai`** (admin uniquement, entrée de navigation dédiée) :
+  sélection d'élève, solde en direct, verdict rendu au contrat, historiques
+  passages + grand livre, et 6 actions appelant exclusivement le moteur :
+  simuler un passage, créditer carnet +5, créditer le mois (quota calendrier),
+  passage daté d'hier, annuler le dernier passage, réinitialiser le solde à 0
+  (contre-écriture). Bannière d'avertissement en mode démo.
+- Migration `20260716100000_outils_banc_essai.sql` : `banc_essai_passage_veille()`
+  — outil de test (admin + refusé si `app.environnement = 'production'`) prouvant
+  que l'unicité du repas est bien PAR JOUR.
+- Test T13 (métier) : le passage d'hier ne bloque pas aujourd'hui.
+
+### Modifié
+- `supabase/seed.sql` : année scolaire active 2025-2026 (couvre la date du jour,
+  « Créditer le mois » fonctionne avec prorata réel) + 1 jour férié de démonstration.
+- `supabase/tests/business_core_tests.sql` : fixture (année du seed désactivée) + T13.
+- `src/types/database.ts` : signature `banc_essai_passage_veille` ; le contrat verdict
+  déménage vers `lib/scan/verdict.ts` (source unique).
+- `src/config/routes.ts`, `nav-links.tsx` : entrée « Banc d'essai » (admin).
+
+### Vérifications
+- SQL : 10 migrations + seed OK ; régression RLS 7/7 ; métier **13/13** ; concurrence OK.
+- QR : aller-retour encode/décode + 5 payloads invalides rejetés.
+- UI : 8/8 assertions Playwright (verdict vert puis rouge « déjà servi à 12:04 »,
+  solde 5→4, historiques rafraîchis), moteur simulé par interception réseau.
+
 ## [Sprint 3A — Business Core] — 2026-07-15
 
 ### Ajouté — migrations (`supabase/migrations/`)

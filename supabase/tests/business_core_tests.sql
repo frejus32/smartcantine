@@ -30,6 +30,9 @@ declare
 begin
   select id into v_ecole from public.etablissements where code = 'COLIBRIS01';
 
+  -- Une seule année active par école : on écarte celle du seed pour les tests.
+  update public.annees_scolaires set actif = false where etablissement_id = v_ecole;
+
   insert into public.annees_scolaires (etablissement_id, libelle, date_debut, date_fin)
   values (v_ecole, '2026-2027', '2026-09-01', '2027-06-30')
   returning id into v_annee;
@@ -247,6 +250,24 @@ begin
    where eleve_id = v_e_scan and date_service = current_date and statut <> 'annule';
   if n <> 1 then raise exception 'T12c ECHEC : % passages actifs (attendu 1)', n; end if;
   raise notice 'T12 PASS — annulation tracee, contre-ecriture, re-scan autorise';
+
+  ---------------------------------------------------------------------------
+  -- T13. Changement de date : un passage DATE D'HIER (outil banc d'essai)
+  --      ne bloque pas le scan d'aujourd'hui — l'unicité est bien par jour.
+  ---------------------------------------------------------------------------
+  perform pg_temp.impersonate('admin@colibris.ci');
+  perform public.banc_essai_passage_veille(v_e_plein);
+  perform pg_temp.reset_identity();
+  select count(*) into n from public.passages
+   where eleve_id = v_e_plein and date_service = current_date - 1 and statut <> 'annule';
+  if n <> 1 then raise exception 'T13a ECHEC : passage veille absent'; end if;
+  perform pg_temp.impersonate('agent@colibris.ci');
+  v_res := public.enregistrer_passage(v_e_plein);
+  perform pg_temp.reset_identity();
+  if v_res ->> 'verdict' <> 'vert' then
+    raise exception 'T13b ECHEC : le passage d''hier bloque aujourd''hui : %', v_res;
+  end if;
+  raise notice 'T13 PASS — unicite par jour : hier ne bloque pas aujourd''hui';
 
   raise notice '=== TOUS LES TESTS DU BUSINESS CORE PASSENT ===';
 end $$;

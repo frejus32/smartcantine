@@ -13,22 +13,7 @@ export type TypeService = "dejeuner";
 export type StatutPassage = "servi" | "a_regulariser" | "annule";
 export type PolitiqueSolde = "strict" | "dette";
 
-/** Verdict retourné par enregistrer_passage — le contrat du scanner (Sprint 3B). */
-export type VerdictScan = {
-  verdict: "vert" | "orange" | "rouge";
-  code:
-    | "servi"
-    | "a_regulariser"
-    | "solde_epuise_bloque"
-    | "deja_servi"
-    | "eleve_inconnu"
-    | "eleve_desactive";
-  eleve?: string;
-  classe_id?: string;
-  passage_id?: string;
-  solde?: number;
-  heure_premier_passage?: string;
-};
+// Le contrat du verdict de scan vit dans "@/lib/scan/verdict" (source unique).
 
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
 
@@ -311,6 +296,10 @@ export type Database = {
       };
       annuler_passage: {
         Args: { p_passage_id: string };
+        Returns: Json;
+      };
+      banc_essai_passage_veille: {
+        Args: { p_eleve_id: string };
         Returns: Json;
       };
     };

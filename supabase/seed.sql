@@ -14,6 +14,7 @@ declare
   v_maternelle uuid := gen_random_uuid();
   v_cm2        uuid := gen_random_uuid();
   v_5e         uuid := gen_random_uuid();
+  v_annee      uuid := gen_random_uuid();
   v_pwd        text := crypt('Password123!', gen_salt('bf'));
 begin
   -- École de démonstration -------------------------------------------------
@@ -54,6 +55,17 @@ begin
     (v_maternelle, v_ecole, 'Petite Section A', 'maternelle'),
     (v_cm2,        v_ecole, 'CM2 B',            'primaire'),
     (v_5e,         v_ecole, '5e Rubis',         'college');
+
+  -- Année scolaire active (couvre la date du jour pour le banc d'essai) --------
+  insert into public.annees_scolaires
+    (id, etablissement_id, libelle, date_debut, date_fin, actif)
+  values
+    (v_annee, v_ecole, '2025-2026', '2025-09-01', '2026-07-31', true);
+
+  insert into public.jours_exceptionnels
+    (etablissement_id, annee_scolaire_id, jour, type, motif)
+  values
+    (v_ecole, v_annee, '2026-07-20', 'ferie', 'Journée pédagogique (démonstration)');
 
   -- Élèves (12) ---------------------------------------------------------------
   insert into public.eleves

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   CalendarDays,
+  FlaskConical,
   LayoutDashboard,
   ScanLine,
   Settings,
@@ -22,6 +23,7 @@ const ICONS: Record<NavItem["icon"], LucideIcon> = {
   scanner: ScanLine,
   calendar: CalendarDays,
   reports: BarChart3,
+  workbench: FlaskConical,
   settings: Settings,
   profile: User,
 };

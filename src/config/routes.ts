@@ -4,7 +4,15 @@ export type NavItem = {
   href: string;
   label: string;
   /** Nom d'icône Lucide, résolu dans la Sidebar (les icônes ne sont pas sérialisables). */
-  icon: "dashboard" | "students" | "scanner" | "calendar" | "reports" | "settings" | "profile";
+  icon:
+    | "dashboard"
+    | "students"
+    | "scanner"
+    | "calendar"
+    | "reports"
+    | "workbench"
+    | "settings"
+    | "profile";
   roles: Role[];
 };
 
@@ -19,6 +27,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/scanner", label: "Scanner", icon: "scanner", roles: ["admin", "responsable", "agent"] },
   { href: "/calendar", label: "Calendrier", icon: "calendar", roles: ["admin", "responsable"] },
   { href: "/reports", label: "Rapports", icon: "reports", roles: ["admin", "responsable"] },
+  { href: "/banc-essai", label: "Banc d'essai", icon: "workbench", roles: ["admin"] },
   { href: "/settings", label: "Paramètres", icon: "settings", roles: ["admin"] },
   { href: "/profile", label: "Profil", icon: "profile", roles: ["admin", "responsable", "agent"] },
 ];
