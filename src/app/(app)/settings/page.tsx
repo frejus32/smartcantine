@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
-import { Settings } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
-import { EmptyState } from "@/components/shared/empty-state";
+import { SettingsForm } from "@/features/settings/settings-form";
 
 export const metadata: Metadata = { title: "Paramètres" };
 
-export default function Page() {
+export default function SettingsPage() {
   return (
     <>
       <PageHeader
         title="Paramètres"
-        description="Configuration de l'établissement et des comptes."
+        description="Configuration de l'établissement, règles de cantine et gestion de l'équipe."
       />
-      <EmptyState
-        icon={Settings}
-        title="Module en préparation"
-        description="Le paramétrage de l'établissement arrive avec les modules métier."
-      />
+      <SettingsForm />
     </>
   );
 }

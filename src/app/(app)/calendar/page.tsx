@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-import { CalendarDays } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
-import { EmptyState } from "@/components/shared/empty-state";
+import { CalendarView } from "@/features/calendar/calendar-view";
 
 export const metadata: Metadata = { title: "Calendrier" };
 
-export default function Page() {
+export default function CalendarPage() {
   return (
     <>
-      <PageHeader title="Calendrier" description="Année scolaire, jours fériés et fermetures." />
-      <EmptyState
-        icon={CalendarDays}
-        title="Module en préparation"
-        description="Le calendrier scolaire et le calcul automatique des quotas arrivent au Sprint 5."
+      <PageHeader
+        title="Calendrier scolaire"
+        description="Les quotas mensuels sont calculés automatiquement à partir des jours d'ouverture."
       />
+      <CalendarView />
     </>
   );
 }

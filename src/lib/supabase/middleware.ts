@@ -13,6 +13,17 @@ import { PUBLIC_ROUTES, canAccess, homeForRole } from "@/config/routes";
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // Mode démonstration : aucune barrière d'authentification (échafaudage UI).
+  if (env.NEXT_PUBLIC_DEMO_MODE) {
+    const { pathname } = request.nextUrl;
+    if (pathname === "/" || pathname === "/login") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+    return response;
+  }
+
   const supabase = createServerClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,

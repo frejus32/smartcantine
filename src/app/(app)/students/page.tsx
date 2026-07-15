@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-import { Users } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
-import { EmptyState } from "@/components/shared/empty-state";
+import { StudentsTable } from "@/features/students/students-table";
 
 export const metadata: Metadata = { title: "Élèves" };
 
-export default function Page() {
+export default function StudentsPage() {
   return (
     <>
-      <PageHeader title="Élèves" description="Inscriptions, photos et badges QR des élèves." />
-      <EmptyState
-        icon={Users}
-        title="Module en préparation"
-        description="L'inscription des élèves et l'édition des badges arrivent au Sprint 3."
+      <PageHeader
+        title="Élèves"
+        description="Inscriptions, soldes de repas et badges QR — 4 classes, année 2026-2027."
       />
+      <StudentsTable />
     </>
   );
 }

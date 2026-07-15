@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-import { ScanLine } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
-import { EmptyState } from "@/components/shared/empty-state";
+import { ScannerDemo } from "@/features/scanner/scanner-demo";
 
 export const metadata: Metadata = { title: "Scanner" };
 
-export default function Page() {
+export default function ScannerPage() {
   return (
     <>
-      <PageHeader title="Scanner" description="Point de scan des badges à la cantine." />
-      <EmptyState
-        icon={ScanLine}
-        title="Module en préparation"
-        description="Le scan des badges avec verdict vert / orange / rouge arrive au Sprint 4."
+      <PageHeader
+        title="Scanner"
+        description="Poste de scan du déjeuner — verdict en moins de 2 secondes, avec ou sans réseau."
       />
+      <ScannerDemo />
     </>
   );
 }
