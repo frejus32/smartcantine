@@ -3,6 +3,50 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement par sprint.
 Chaque entrée liste les nouveaux fichiers, les fichiers modifiés, les migrations et les commandes.
 
+## [Sprint 3A — Business Core] — 2026-07-15
+
+### Ajouté — migrations (`supabase/migrations/`)
+- `20260715100000_calendrier.sql` — `annees_scolaires` (bornes, jours d'ouverture ISO,
+  une seule année active par école), `jours_exceptionnels` (férié / vacances / fermeture,
+  bornés à leur année par trigger), fonctions `est_jour_ouvert()`,
+  `private.compter_jours_ouverts()`, `quota_du_mois()`.
+- `20260715110000_repas.sql` — `passages` avec **l'index unique partiel
+  `(eleve_id, date_service, type_service) where statut <> 'annule'`** (la règle d'or),
+  `mouvements_repas` (grand livre signé : crédits > 0, consommation = -1, ajustements
+  motivés, un seul `credit_mois` par élève et par mois), triggers **append-only**
+  (UPDATE/DELETE bloqués pour tous, service_role compris), garde d'annulation
+  (transition unique, fenêtre 5 min), `solde_eleve()`, colonne
+  `etablissements.politique_solde_epuise` (strict | dette).
+- `20260715120000_fonctions_metier.sql` — fonctions SECURITY DEFINER, seul chemin
+  d'écriture : `crediter_mois()` (quota auto + prorata + anti double-facturation),
+  `crediter_carnet()`, `ajuster_solde()` (contre-écriture motivée, admin),
+  `enregistrer_passage()` (verdicts vert/orange/rouge, course concurrente absorbée
+  en rouge « déjà servi »), `annuler_passage()` (sous 5 min, contre-écriture +1).
+- `20260715130000_rls_repas.sql` — RLS : lecture par école/rôle ; **aucune politique
+  d'écriture** sur `mouvements_repas` ni `passages`.
+
+### Ajouté — tests (`supabase/tests/`)
+- `business_core_tests.sql` — 12 assertions : quota (18), week-ends/fériés/vacances/
+  fermetures exclus, prorata (13), crédit et anti double-facturation, verdict vert,
+  rouge « déjà servi » avec heure, orange dette (-1) et orange strict (0 passage),
+  fraudes rejetées (rôles, RLS, append-only, falsification de date), annulation + re-scan.
+- `concurrence_test.sh` — 8 connexions simultanées sur le même élève :
+  1 vert / 7 rouges / 1 passage / solde -1.
+
+### Modifié
+- `src/types/database.ts` — nouvelles tables (Insert/Update `never` sur les journaux),
+  signatures des 8 fonctions, type `VerdictScan` (contrat du scanner 3B), enums.
+- `src/types/entities.ts` — alias `AnneeScolaire`, `JourExceptionnel`,
+  `MouvementRepas`, `Passage`.
+
+### Décisions
+- Le calendrier gouverne les **quotas**, jamais le droit de servir un jour donné.
+- Les cas métier du scan retournent un **verdict**, jamais une exception.
+
+### Commandes
+- Pipeline local : rebuild + 9 migrations + seed + `rls_tests.sql` (régression 7/7)
+  + `business_core_tests.sql` (12/12) + `concurrence_test.sh` (OK).
+
 ## [Sprint UI] — 2026-07-14 — commit `eb9cac8`
 
 ### Ajouté
