@@ -1,7 +1,7 @@
 import { env } from "@/config/env";
 import { decoderBadge } from "@/lib/qr/badge";
 import { QrPayloadError } from "@/lib/qr/payload";
-import { enregistrerPassage } from "@/services/moteur.service";
+import { enregistrerPassage, photoEleve } from "@/services/moteur.service";
 import type { ResultatScan } from "@/scanner/types/resultat";
 
 /**
@@ -29,6 +29,10 @@ export async function traiterScan(texteQr: string): Promise<ResultatScan> {
 
   try {
     const verdict = await enregistrerPassage(studentId);
+    if (verdict.verdict !== "rouge") {
+      const photo = await photoEleve(studentId);
+      if (photo) verdict.photo_path = photo;
+    }
     return { source: "moteur", verdict };
   } catch (e) {
     return {

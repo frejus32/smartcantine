@@ -46,6 +46,17 @@ export async function soldeEleve(eleveId: string): Promise<number> {
   return data as number;
 }
 
+export async function photoEleve(eleveId: string): Promise<string | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("eleves")
+    .select("photo_path")
+    .eq("id", eleveId)
+    .maybeSingle();
+  if (error || !data?.photo_path) return null;
+  return data.photo_path;
+}
+
 export async function enregistrerPassage(eleveId: string): Promise<ScanVerdict> {
   const supabase = createClient();
   const { data, error } = await supabase.rpc("enregistrer_passage", { p_eleve_id: eleveId });
@@ -122,4 +133,93 @@ export async function listerMouvements(eleveId: string): Promise<MouvementRepas[
     .limit(15);
   if (error) throw new Error(messageErreur(error, "Grand livre indisponible."));
   return (data ?? []) as MouvementRepas[];
+}
+
+// ============================================================================
+// Sprint 4 — lectures agrégées et détail
+// ============================================================================
+
+export type EleveDetail = {
+  id: string;
+  etablissement_id: string;
+  classe_id: string;
+  matricule: string;
+  nom: string;
+  prenoms: string;
+  date_naissance: string | null;
+  photo_path: string | null;
+  consentement_photo: boolean;
+  statut: "actif" | "desactive";
+  classe_nom: string;
+  classe_niveau: "maternelle" | "primaire" | "college";
+  solde: number;
+};
+
+export type ClasseDetail = {
+  id: string;
+  nom: string;
+  niveau: "maternelle" | "primaire" | "college";
+  actif: boolean;
+  effectif: number;
+};
+
+export type StatsDashboard = {
+  eleves_actifs: number;
+  classes: number;
+  repas_servis_aujourdhui: number;
+  a_regulariser_aujourdhui: number;
+  refus_aujourdhui: number;
+};
+
+export async function listerElevesDetail(): Promise<EleveDetail[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("eleves_detail").select("*").order("matricule");
+  if (error) throw new Error(messageErreur(error, "Impossible de charger les élèves."));
+  return (data ?? []) as EleveDetail[];
+}
+
+export async function listerClassesDetail(): Promise<ClasseDetail[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("classes_detail").select("*").order("nom");
+  if (error) throw new Error(messageErreur(error, "Impossible de charger les classes."));
+  return (data ?? []) as ClasseDetail[];
+}
+
+export async function statsDashboard(): Promise<StatsDashboard> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("stats_dashboard");
+  if (error) throw new Error(messageErreur(error, "Statistiques indisponibles."));
+  return data as StatsDashboard;
+}
+
+export async function serieRepas(jours = 14): Promise<Array<{ jour: string; servis: number }>> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("serie_repas", { p_jours: jours });
+  if (error) throw new Error(messageErreur(error, "Série indisponible."));
+  return (data ?? []) as Array<{ jour: string; servis: number }>;
+}
+
+export type ActiviteItem = {
+  passage_id: string;
+  heure: string;
+  eleve: string;
+  statut: "servi" | "a_regulariser" | "annule";
+};
+
+export async function activiteRecente(limite = 8): Promise<ActiviteItem[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("activite_recente", { p_limite: limite });
+  if (error) throw new Error(messageErreur(error, "Activité indisponible."));
+  return (data ?? []) as ActiviteItem[];
+}
+
+/** URL signée courte durée pour afficher une photo privée du bucket Storage. */
+export async function urlPhoto(photoPath: string | null): Promise<string | null> {
+  if (!photoPath) return null;
+  const supabase = createClient();
+  const { data, error } = await supabase.storage
+    .from("photos-eleves")
+    .createSignedUrl(photoPath, 3600);
+  if (error) return null;
+  return data.signedUrl;
 }

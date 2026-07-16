@@ -22,6 +22,7 @@ export const scanVerdictSchema = z.object({
   passage_id: z.string().uuid().optional(),
   solde: z.number().int().optional(),
   heure_premier_passage: z.string().optional(),
+  photo_path: z.string().optional(),
 });
 
 export type ScanVerdict = z.infer<typeof scanVerdictSchema>;

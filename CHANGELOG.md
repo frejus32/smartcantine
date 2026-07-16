@@ -3,6 +3,53 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement par sprint.
 Chaque entrée liste les nouveaux fichiers, les fichiers modifiés, les migrations et les commandes.
 
+## [Sprint 4 — Real Data Integration] — 2026-07-16
+
+### Ajouté — migrations (`supabase/migrations/`)
+- `20260716200000_vues_lecture.sql` — vues `eleves_detail` (classe + solde) et
+  `classes_detail` (effectif) en `security_invoker` ; RPC `stats_dashboard()`,
+  `serie_repas()`, `activite_recente()` pour l'interface.
+- `20260716210000_crud_gestion.sql` — fonctions `creer_classe`, `creer_eleve`,
+  `modifier_eleve`, `definir_statut_eleve`, `definir_photo_eleve` (rôle vérifié,
+  établissement forcé au tenant, consentement photo daté automatiquement).
+
+### Ajouté — application
+- `src/services/gestion.service.ts` — écritures (CRUD élèves, classes, upload photo).
+- `src/services/moteur.service.ts` — lectures Sprint 4 : `listerElevesDetail`,
+  `listerClassesDetail`, `statsDashboard`, `serieRepas`, `activiteRecente`,
+  `urlPhoto`, `photoEleve`, `listerClasses`.
+- `src/features/students/` — `use-students-data.ts` (hook données réelles),
+  `student-form-dialog.tsx` (création/édition + upload photo),
+  `student-badge-dialog.tsx` (QR **signé** généré côté serveur).
+- `src/features/dashboard/dashboard-content.tsx`,
+  `src/features/reports/reports-content.tsx` — connectés aux vraies données.
+- `src/app/api/badge/route.ts` — génère le QR signé (clé privée jamais exposée).
+- `src/app/api/photo/route.ts` — proxy d'URL signée pour les photos privées.
+
+### Modifié
+- `src/features/students/students-table.tsx` — réécrit sur Supabase :
+  recherche/filtres/pagination réels, CRUD, désactivation/réactivation.
+- `src/scanner/services/scan-pipeline.ts` + `components/scan-screen.tsx` +
+  `lib/scan/verdict.ts` — photo réelle de l'élève jointe au verdict.
+- `src/app/(app)/{dashboard,reports}/page.tsx` — branchés sur les composants réels.
+- `src/types/database.ts` — signatures des RPC Sprint 4.
+
+### Supprimé
+- `src/lib/mock/data.ts` et les composants fictifs associés
+  (`dashboard/repas-chart`, `dashboard/activite-recente`, `reports/reports-charts`).
+  **Toutes les données fictives sont éliminées.**
+
+### Dépendances
+- Ajout : `qrcode` ; dev : `@types/qrcode`.
+
+### Vérifications
+- Flux cible prouvé en SQL sous RLS : créer classe → créer élève →
+  `crediter_mois` (quota calendrier = 11) → `enregistrer_passage` (vert,
+  **solde 11 → 10**) → recherche ILIKE → activité récente → dashboard temps réel.
+  Preuve HTTP réelle (PostgREST) : `stats_dashboard` sous RLS.
+- build vert, lint vert, typecheck vert ; unitaires 9/9 ; E2E scanner 13/13 ;
+  non-régression SQL (RLS 7/7, métier 13/13).
+
 ## [Sprint 3B — Scan Runtime] — 2026-07-16
 
 ### Ajouté — module `src/scanner/`

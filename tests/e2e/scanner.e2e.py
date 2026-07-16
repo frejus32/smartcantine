@@ -22,6 +22,8 @@ def make_handler():
                 route.fulfill(json={"verdict": "rouge", "code": "eleve_inconnu"})
         elif "/rest/v1/classes" in url:
             route.fulfill(json=[{"id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc", "nom": "CM2 B"}])
+        elif "/rest/v1/eleves" in url:
+            route.fulfill(json={"photo_path": None})
         else:
             route.fulfill(json=[])
     return handler

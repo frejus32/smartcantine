@@ -12,7 +12,7 @@ import {
   ShieldX,
   WifiOff,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -274,6 +274,9 @@ function VerdictPleinePage({
         </div>
         {v.eleve ? (
           <Avatar className="size-28 border-4 border-white/40">
+            {v.photo_path ? (
+              <AvatarImage src={`/api/photo?path=${encodeURIComponent(v.photo_path)}`} alt="" />
+            ) : null}
             <AvatarFallback className="bg-white/20 text-3xl font-bold text-white">
               {getInitials(v.eleve)}
             </AvatarFallback>

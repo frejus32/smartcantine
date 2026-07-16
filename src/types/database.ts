@@ -302,6 +302,41 @@ export type Database = {
         Args: { p_eleve_id: string };
         Returns: Json;
       };
+      stats_dashboard: { Args: Record<string, never>; Returns: Json };
+      serie_repas: { Args: { p_jours?: number }; Returns: Array<{ jour: string; servis: number }> };
+      activite_recente: {
+        Args: { p_limite?: number };
+        Returns: Array<{ passage_id: string; heure: string; eleve: string; statut: StatutPassage }>;
+      };
+      creer_classe: { Args: { p_nom: string; p_niveau: NiveauScolaire }; Returns: Json };
+      creer_eleve: {
+        Args: {
+          p_classe_id: string;
+          p_matricule: string;
+          p_nom: string;
+          p_prenoms: string;
+          p_date_naissance?: string | null;
+          p_consentement_photo?: boolean;
+        };
+        Returns: Json;
+      };
+      modifier_eleve: {
+        Args: {
+          p_eleve_id: string;
+          p_classe_id: string;
+          p_matricule: string;
+          p_nom: string;
+          p_prenoms: string;
+          p_date_naissance?: string | null;
+          p_consentement_photo?: boolean | null;
+        };
+        Returns: Json;
+      };
+      definir_statut_eleve: {
+        Args: { p_eleve_id: string; p_statut: StatutEleve };
+        Returns: Json;
+      };
+      definir_photo_eleve: { Args: { p_eleve_id: string; p_photo_path: string }; Returns: Json };
     };
     Enums: {
       role_utilisateur: RoleUtilisateur;
