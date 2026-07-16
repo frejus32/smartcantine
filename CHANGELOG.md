@@ -3,6 +3,60 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement par sprint.
 Chaque entrée liste les nouveaux fichiers, les fichiers modifiés, les migrations et les commandes.
 
+## [Sprint 3B — Scan Runtime] — 2026-07-16
+
+### Ajouté — module `src/scanner/`
+- `types/machine.ts` — machine à états pure (idle, camera_initializing, camera_ready,
+  scanning, processing, authorized, denied, warning, error, returning) ; table de
+  transitions explicite, événements hors table ignorés (anti-corruption).
+- `types/resultat.ts` — `ResultatScan` (moteur | badge | technique), `EntreeHistorique`.
+- `adapters/` — contrat `ScannerAdapter` + 3 implémentations : `BarcodeDetector`
+  (Chrome/Edge/Android), `ZXing` (repli Safari/iPhone), `test` (couture E2E) ;
+  `index.ts` sélectionne automatiquement le meilleur disponible.
+- `services/camera.service.ts` — ouverture de la meilleure caméra (arrière préférée),
+  codes d'erreur stables (refusée / indisponible / erreur).
+- `services/audio.service.ts` — AudioService Web Audio (success / warning / error),
+  synthétisé, préparé au geste utilisateur.
+- `services/scan-pipeline.ts` — pipeline étapes 4→8 : format v1 → signature Ed25519
+  → studentId → `enregistrer_passage()` → `ScanVerdict`. Aucune décision métier.
+- `hooks/use-scanner.ts` — orchestrateur : pilote la machine, exécute l'effet de
+  chaque état (caméra, adaptateur, pipeline, son, temporisations, retour auto).
+- `components/scan-screen.tsx` — poste réel : viseur caméra, verdict pleine page
+  (photo, nom, classe, heure, solde, mot), plein écran postes fixes, historique.
+
+### Ajouté — cryptographie & outils
+- `src/lib/qr/signature.ts` — signature/vérification Ed25519 (@noble/ed25519).
+- `src/lib/qr/badge.ts` — badge signé `SC1:<schoolId>:<studentId>:<signature>` ;
+  `encoderBadge` (serveur) / `decoderBadge` (scan, rejette tout badge non authentique).
+- `scripts/qr-keygen.mjs` — génération de la paire de clés (`node scripts/qr-keygen.mjs`).
+
+### Ajouté — tests
+- Unitaires (Vitest) : `machine.test.ts` (5), `badge.test.ts` (4) — **9/9**.
+- E2E (`tests/e2e/scanner.e2e.py`, Playwright) : QR valide, déjà servi, élève inactif,
+  QR invalide, signature invalide, caméra refusée, caméra indisponible — **13/13**.
+
+### Modifié
+- `src/services/moteur.service.ts` — `listerClasses()` (libellés au verdict).
+- `src/app/(app)/scanner/page.tsx` — branché sur `<ScanScreen />` (runtime réel).
+- `src/config/env.ts` — `NEXT_PUBLIC_QR_PUBLIC_KEY` (clé publique de vérification).
+- `.env.example` / `.env.local` — clés QR (privée serveur, publique client).
+
+### Supprimé
+- `src/features/scanner/scanner-demo.tsx` — maquette du Sprint UI, remplacée.
+
+### Dépendances
+- Ajout : `@noble/ed25519`, `@noble/hashes`, `@zxing/browser` ; dev : `vitest`.
+- Scripts : `test:unit` (vitest run).
+
+### Décisions
+- Ed25519 via @noble (et non WebCrypto) pour un support homogène Safari/iOS.
+- Aucune règle métier dans React : tout refus vient du moteur ; le pipeline ne
+  rejette que les badges non authentiques (format / signature).
+
+### Vérifications
+- build vert, lint vert, typecheck vert ; unitaires 9/9 ; E2E scanner 13/13 ;
+  non-régression SQL (RLS 7/7, métier 13/13).
+
 ## [Sprint 3.5 — Banc d'essai du moteur] — 2026-07-15
 
 ### Ajouté

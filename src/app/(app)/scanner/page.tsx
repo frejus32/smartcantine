@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shared/page-header";
-import { ScannerDemo } from "@/features/scanner/scanner-demo";
+import { ScanScreen } from "@/scanner/components/scan-screen";
 
 export const metadata: Metadata = { title: "Scanner" };
 
@@ -9,9 +9,9 @@ export default function ScannerPage() {
     <>
       <PageHeader
         title="Scanner"
-        description="Poste de scan du déjeuner — verdict en moins de 2 secondes, avec ou sans réseau."
+        description="Poste de scan du déjeuner — badges signés, verdict du moteur en moins de 2 secondes."
       />
-      <ScannerDemo />
+      <ScanScreen />
     </>
   );
 }

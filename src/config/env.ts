@@ -12,10 +12,13 @@ const publicEnvSchema = z.object({
     .enum(["true", "false"])
     .default("false")
     .transform((v) => v === "true"),
+  /** Clé publique Ed25519 (hex) vérifiant la signature des badges au scan. */
+  NEXT_PUBLIC_QR_PUBLIC_KEY: z.string().regex(/^[0-9a-f]{64}$/i),
 });
 
 export const env = publicEnvSchema.parse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE,
+  NEXT_PUBLIC_QR_PUBLIC_KEY: process.env.NEXT_PUBLIC_QR_PUBLIC_KEY,
 });

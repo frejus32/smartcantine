@@ -30,6 +30,15 @@ export async function listerEleves(): Promise<EleveResume[]> {
   return (data ?? []) as EleveResume[];
 }
 
+export type ClasseResume = { id: string; nom: string };
+
+export async function listerClasses(): Promise<ClasseResume[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("classes").select("id, nom").order("nom");
+  if (error) throw new Error(messageErreur(error, "Impossible de charger les classes."));
+  return (data ?? []) as ClasseResume[];
+}
+
 export async function soldeEleve(eleveId: string): Promise<number> {
   const supabase = createClient();
   const { data, error } = await supabase.rpc("solde_eleve", { p_eleve_id: eleveId });
