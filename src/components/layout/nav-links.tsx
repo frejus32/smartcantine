@@ -7,6 +7,7 @@ import {
   CalendarDays,
   FlaskConical,
   LayoutDashboard,
+  QrCode,
   ScanLine,
   Settings,
   User,
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 const ICONS: Record<NavItem["icon"], LucideIcon> = {
   dashboard: LayoutDashboard,
   students: Users,
+  badges: QrCode,
   scanner: ScanLine,
   calendar: CalendarDays,
   reports: BarChart3,

@@ -223,3 +223,21 @@ export async function urlPhoto(photoPath: string | null): Promise<string | null>
   if (error) return null;
   return data.signedUrl;
 }
+
+// ============================================================================
+// Sprint 5 — alertes actionnables du dashboard
+// ============================================================================
+
+export type AlertesDashboard = {
+  dettes: number;
+  soldes_epuises: number;
+  photos_manquantes: number;
+  quota_total_restant: number;
+};
+
+export async function alertesDashboard(): Promise<AlertesDashboard> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("alertes_dashboard");
+  if (error) throw new Error(messageErreur(error, "Alertes indisponibles."));
+  return data as AlertesDashboard;
+}

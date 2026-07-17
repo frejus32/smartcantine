@@ -27,6 +27,12 @@ export type Database = {
           nom: string;
           ville: string | null;
           politique_solde_epuise: PolitiqueSolde;
+          adresse: string | null;
+          telephone: string | null;
+          email: string | null;
+          logo_path: string | null;
+          heure_service: string;
+          reinit_auto: boolean;
           actif: boolean;
           created_at: string;
           updated_at: string;
@@ -264,7 +270,40 @@ export type Database = {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      eleves_detail: {
+        Row: {
+          id: string;
+          etablissement_id: string;
+          classe_id: string;
+          matricule: string;
+          nom: string;
+          prenoms: string;
+          date_naissance: string | null;
+          photo_path: string | null;
+          consentement_photo: boolean;
+          statut: StatutEleve;
+          created_at: string;
+          classe_nom: string;
+          classe_niveau: NiveauScolaire;
+          solde: number;
+        };
+        Relationships: [];
+      };
+      classes_detail: {
+        Row: {
+          id: string;
+          etablissement_id: string;
+          nom: string;
+          niveau: NiveauScolaire;
+          actif: boolean;
+          created_at: string;
+          updated_at: string;
+          effectif: number;
+        };
+        Relationships: [];
+      };
+    };
     Functions: {
       est_jour_ouvert: {
         Args: { p_annee_scolaire_id: string; p_jour: string };
@@ -337,6 +376,40 @@ export type Database = {
         Returns: Json;
       };
       definir_photo_eleve: { Args: { p_eleve_id: string; p_photo_path: string }; Returns: Json };
+      modifier_etablissement: { Args: Record<string, unknown>; Returns: Json };
+      lister_audit: { Args: { p_limite?: number }; Returns: unknown[] };
+      lister_utilisateurs: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          id: string;
+          nom_complet: string;
+          role: RoleUtilisateur;
+          email: string;
+          created_at: string;
+        }>;
+      };
+      definir_role_utilisateur: {
+        Args: { p_user_id: string; p_role: RoleUtilisateur };
+        Returns: undefined;
+      };
+      rapport_quotidien: { Args: { p_jour?: string }; Returns: Json };
+      rapport_quotidien_par_classe: {
+        Args: { p_jour?: string };
+        Returns: Array<{ classe: string; servis: number }>;
+      };
+      rapport_mensuel: { Args: { p_annee: number; p_mois: number }; Returns: Json };
+      rapport_mensuel_serie: {
+        Args: { p_annee: number; p_mois: number };
+        Returns: Array<{ jour: string; servis: number }>;
+      };
+      annee_scolaire_active: { Args: Record<string, never>; Returns: Json };
+      lister_jours_exceptionnels: { Args: Record<string, never>; Returns: unknown[] };
+      ajouter_jour_exceptionnel: {
+        Args: { p_jour: string; p_type: TypeJourExceptionnel; p_motif: string };
+        Returns: Json;
+      };
+      supprimer_jour_exceptionnel: { Args: { p_id: string }; Returns: undefined };
+      alertes_dashboard: { Args: Record<string, never>; Returns: Json };
     };
     Enums: {
       role_utilisateur: RoleUtilisateur;

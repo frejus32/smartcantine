@@ -9,11 +9,13 @@ import {
   Power,
   QrCode,
   Search,
+  Upload,
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
+import { ImportDialog } from "@/features/import/import-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,6 +55,7 @@ export function StudentsTable() {
   const [formOuvert, setFormOuvert] = useState(false);
   const [eleveEdite, setEleveEdite] = useState<EleveDetail | null>(null);
   const [badgeEleve, setBadgeEleve] = useState<EleveDetail | null>(null);
+  const [importOuvert, setImportOuvert] = useState(false);
 
   const filtres = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
@@ -155,6 +158,9 @@ export function StudentsTable() {
           <option value="actif">Actif</option>
           <option value="desactive">Désactivé</option>
         </NativeSelect>
+        <Button variant="secondary" onClick={() => setImportOuvert(true)}>
+          <Upload aria-hidden /> Importer Excel
+        </Button>
         <Button onClick={ouvrirCreation}>
           <Plus aria-hidden /> Inscrire un élève
         </Button>
@@ -327,6 +333,13 @@ export function StudentsTable() {
         onEnregistre={() => void rafraichir()}
       />
       <StudentBadgeDialog eleve={badgeEleve} onFermer={() => setBadgeEleve(null)} />
+      <ImportDialog
+        ouvert={importOuvert}
+        onOuvertChange={setImportOuvert}
+        classes={classes}
+        eleves={eleves}
+        onImporte={() => void rafraichir()}
+      />
     </div>
   );
 }

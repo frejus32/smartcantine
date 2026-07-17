@@ -113,3 +113,29 @@
     }
   }
 }
+
+/* ---- Impression des badges (planche A4) ---- */
+@media print {
+  body {
+    background: white;
+  }
+  aside,
+  header,
+  footer,
+  .print\:hidden {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .badge-sheet {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8mm !important;
+    padding: 10mm !important;
+  }
+  .badge-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+}

@@ -5,7 +5,10 @@ import Link from "next/link";
 import {
   AlertTriangle,
   CalendarDays,
+  CameraOff,
+  CreditCard,
   ScanLine,
+  TicketCheck,
   UserPlus,
   Users,
   UtensilsCrossed,
@@ -29,9 +32,11 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { KpiCard } from "@/features/dashboard/kpi-card";
 import {
   activiteRecente,
+  alertesDashboard,
   serieRepas,
   statsDashboard,
   type ActiviteItem,
+  type AlertesDashboard,
   type StatsDashboard,
 } from "@/services/moteur.service";
 import { getInitials } from "@/utils/initials";
@@ -44,6 +49,7 @@ const STATUT_BADGE = {
 
 export function DashboardContent() {
   const [stats, setStats] = useState<StatsDashboard | null>(null);
+  const [alertes, setAlertes] = useState<AlertesDashboard | null>(null);
   const [serie, setSerie] = useState<Array<{ jour: string; servis: number }>>([]);
   const [activite, setActivite] = useState<ActiviteItem[]>([]);
   const [chargement, setChargement] = useState(true);
@@ -52,9 +58,10 @@ export function DashboardContent() {
   function charger() {
     setChargement(true);
     setErreur(null);
-    Promise.all([statsDashboard(), serieRepas(14), activiteRecente(8)])
-      .then(([s, se, a]) => {
+    Promise.all([statsDashboard(), alertesDashboard(), serieRepas(14), activiteRecente(8)])
+      .then(([s, al, se, a]) => {
         setStats(s);
+        setAlertes(al);
         setSerie(se.map((p) => ({ jour: p.jour.slice(5).replace("-", "/"), servis: p.servis })));
         setActivite(a);
       })
@@ -102,12 +109,46 @@ export function DashboardContent() {
           delta={{ text: `${stats?.classes ?? 0} classes`, tone: "neutral" }}
         />
         <KpiCard
-          label="Classes"
-          value={String(stats?.classes ?? 0)}
-          icon={CalendarDays}
+          label="Quota total restant"
+          value={String(alertes?.quota_total_restant ?? 0)}
+          icon={TicketCheck}
           tone="primary"
+          delta={{ text: "repas crédités", tone: "neutral" }}
         />
       </div>
+
+      {alertes &&
+      (alertes.dettes > 0 || alertes.soldes_epuises > 0 || alertes.photos_manquantes > 0) ? (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {alertes.dettes > 0 ? (
+            <AlerteCarte
+              icon={CreditCard}
+              ton="warning"
+              titre={`${alertes.dettes} élève${alertes.dettes > 1 ? "s" : ""} en dette`}
+              detail="Solde négatif — à régulariser à l'économat."
+              lien="/students"
+            />
+          ) : null}
+          {alertes.soldes_epuises > 0 ? (
+            <AlerteCarte
+              icon={AlertTriangle}
+              ton="warning"
+              titre={`${alertes.soldes_epuises} solde${alertes.soldes_epuises > 1 ? "s" : ""} épuisé${alertes.soldes_epuises > 1 ? "s" : ""}`}
+              detail="Créditez le mois ou un carnet pour ces élèves."
+              lien="/students"
+            />
+          ) : null}
+          {alertes.photos_manquantes > 0 ? (
+            <AlerteCarte
+              icon={CameraOff}
+              ton="primary"
+              titre={`${alertes.photos_manquantes} photo${alertes.photos_manquantes > 1 ? "s" : ""} manquante${alertes.photos_manquantes > 1 ? "s" : ""}`}
+              detail="La photo sécurise le contrôle visuel au scan."
+              lien="/students"
+            />
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-5">
         <Card className="lg:col-span-3">
@@ -222,5 +263,38 @@ export function DashboardContent() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+/** Carte d'alerte actionnable du dashboard. */
+function AlerteCarte({
+  icon: Icon,
+  ton,
+  titre,
+  detail,
+  lien,
+}: {
+  icon: typeof AlertTriangle;
+  ton: "warning" | "primary";
+  titre: string;
+  detail: string;
+  lien: string;
+}) {
+  const couleur =
+    ton === "warning"
+      ? "border-l-warning bg-warning-soft/40"
+      : "border-l-primary bg-primary-soft/40";
+  const iconColor = ton === "warning" ? "text-warning" : "text-primary";
+  return (
+    <Link
+      href={lien}
+      className={`hover:bg-secondary flex items-start gap-3 rounded-lg border border-l-4 p-4 transition-colors ${couleur}`}
+    >
+      <Icon className={`mt-0.5 size-5 shrink-0 ${iconColor}`} aria-hidden />
+      <div className="min-w-0">
+        <p className="font-semibold">{titre}</p>
+        <p className="text-muted-foreground text-sm">{detail}</p>
+      </div>
+    </Link>
   );
 }

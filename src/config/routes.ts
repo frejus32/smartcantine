@@ -7,6 +7,7 @@ export type NavItem = {
   icon:
     | "dashboard"
     | "students"
+    | "badges"
     | "scanner"
     | "calendar"
     | "reports"
@@ -24,6 +25,7 @@ export const NAV_ITEMS: NavItem[] = [
     roles: ["admin", "responsable"],
   },
   { href: "/students", label: "Élèves", icon: "students", roles: ["admin", "responsable"] },
+  { href: "/badges", label: "Badges", icon: "badges", roles: ["admin", "responsable"] },
   { href: "/scanner", label: "Scanner", icon: "scanner", roles: ["admin", "responsable", "agent"] },
   { href: "/calendar", label: "Calendrier", icon: "calendar", roles: ["admin", "responsable"] },
   { href: "/reports", label: "Rapports", icon: "reports", roles: ["admin", "responsable"] },

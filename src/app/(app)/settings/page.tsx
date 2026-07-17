@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shared/page-header";
-import { SettingsForm } from "@/features/settings/settings-form";
+import { SettingsContent } from "@/features/settings/settings-content";
 
 export const metadata: Metadata = { title: "Paramètres" };
 
@@ -9,9 +9,9 @@ export default function SettingsPage() {
     <>
       <PageHeader
         title="Paramètres"
-        description="Configuration de l'établissement, règles de cantine et gestion de l'équipe."
+        description="Administration de l'établissement, cantine, calendrier, utilisateurs et sécurité."
       />
-      <SettingsForm />
+      <SettingsContent />
     </>
   );
 }

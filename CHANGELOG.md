@@ -3,6 +3,78 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement par sprint.
 Chaque entrée liste les nouveaux fichiers, les fichiers modifiés, les migrations et les commandes.
 
+## [Sprint 5 — School Operations Suite] — 2026-07-17
+
+Grand sprint fonctionnel (ex-phases 5, 6, 7). SmartCantine devient utilisable en
+école réelle : inscription/import, badges imprimables, rapports, administration
+complète, dashboard final. Business Core, Scan Pipeline et ScanVerdict préservés.
+
+### Ajouté — migrations (`supabase/migrations/`)
+- `20260717100000_parametres_ecole.sql` — colonnes établissement (adresse,
+  téléphone, email, logo_path, heure_service, reinit_auto) ; bucket public
+  `logos-etablissements` + politiques ; `modifier_etablissement()`.
+- `20260717110000_audit.sql` — table `journal_audit` **append-only** (trigger
+  interdisant UPDATE/DELETE), `private.journaliser()`, `lister_audit()` (admin).
+- `20260717120000_utilisateurs_audit.sql` — `lister_utilisateurs()`,
+  `definir_role_utilisateur()` ; branchement de la journalisation sur
+  `ajuster_solde` et `modifier_etablissement`.
+- `20260717130000_rapports.sql` — `rapport_quotidien()`,
+  `rapport_quotidien_par_classe()`, `rapport_mensuel()`, `rapport_mensuel_serie()`,
+  gestion du calendrier (`ajouter/supprimer_jour_exceptionnel`, `lister_*`).
+- `20260717140000_dashboard_alertes.sql` — `alertes_dashboard()` (dettes, soldes
+  épuisés, photos manquantes, quota total restant).
+
+### Ajouté — Module 1 (Inscription & Badges)
+- `src/services/import.service.ts` — import Excel (SheetJS) : analyse, validation,
+  **détection des doublons** (fichier + base), création via `creer_eleve`
+  (aucune règle métier dupliquée), génération d'un modèle Excel.
+- `src/features/import/import-dialog.tsx` — assistant en 3 étapes (dépôt, aperçu
+  valides/doublons/erreurs, résultat), branché dans la page Élèves.
+- `src/app/api/badges/route.ts` — génération en masse des **QR signés** (par
+  classe ou toute l'école), clé privée côté serveur.
+- `src/features/badges/` — page `/badges` : sélection, badge officiel (logo,
+  photo, nom, classe, matricule, QR), aperçu et **impression planche A4**.
+
+### Ajouté — Module 2 (Rapports)
+- `src/services/rapports.service.ts`, `src/services/export.service.ts` (PDF via
+  jsPDF, Excel/CSV via SheetJS).
+- `src/features/reports/reports-content.tsx` — onglets quotidien/mensuel, KPI
+  réels (servis, absents, distribués, régularisations), graphiques recharts,
+  exports PDF/Excel/CSV.
+
+### Ajouté — Module 3 (Paramètres)
+- `src/services/admin.service.ts` — établissement, logo, utilisateurs/rôles,
+  audit, calendrier.
+- `src/features/settings/settings-content.tsx` — 5 sections : établissement
+  (identité + logo), cantine (heure, politique de dette, réinit auto),
+  calendrier (CRUD jours exceptionnels), utilisateurs (rôles), sécurité
+  (journal d'audit).
+
+### Ajouté — Module 4 (Dashboard final)
+- `src/features/dashboard/dashboard-content.tsx` enrichi : quota total restant,
+  **cartes d'alertes actionnables** (dettes, soldes épuisés, photos manquantes).
+
+### Ajouté — tests
+- `supabase/tests/operations_tests.sql` — **8 assertions** : rapports quotidien/
+  mensuel cohérents, audit des actions sensibles, gestion utilisateurs/rôles,
+  paramètres tracés, calendrier, cloisonnement du journal d'audit (admin only).
+
+### Modifié
+- `src/features/students/students-table.tsx` — bouton « Importer Excel ».
+- `src/config/routes.ts`, `nav-links.tsx` — entrée « Badges ».
+- `src/types/database.ts` — signatures des RPC Sprint 5 + vues typées.
+- `src/styles/globals.css` — styles d'impression A4 des badges.
+
+### Dépendances
+- Ajout : `xlsx`, `jspdf`, `jspdf-autotable`, `qrcode`.
+
+### Vérifications
+- build vert, lint vert, typecheck vert.
+- Tests : unitaires **9/9**, E2E scanner **13/13** (Scan Pipeline intact),
+  SQL RLS **7/7**, métier **13/13**, operations **8/8**.
+- Modules prouvés en SQL sous RLS (alertes, rapports, utilisateurs, import via
+  `creer_eleve`).
+
 ## [Sprint 4 — Real Data Integration] — 2026-07-16
 
 ### Ajouté — migrations (`supabase/migrations/`)
