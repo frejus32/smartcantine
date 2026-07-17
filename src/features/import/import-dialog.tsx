@@ -67,7 +67,7 @@ export function ImportDialog({
     if (!f) return;
     try {
       const buffer = await f.arrayBuffer();
-      const analyse = analyserFichier(buffer, classes, eleves);
+      const analyse = await analyserFichier(buffer, classes, eleves);
       if (analyse.length === 0) {
         toast.error("Le fichier ne contient aucune ligne exploitable.");
         return;
@@ -81,8 +81,8 @@ export function ImportDialog({
     }
   }
 
-  function telechargerModele() {
-    const blob = genererModele(classes);
+  async function telechargerModele() {
+    const blob = await genererModele(classes);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -147,7 +147,7 @@ export function ImportDialog({
               className="hidden"
               onChange={surFichier}
             />
-            <Button variant="secondary" onClick={telechargerModele} className="w-full">
+            <Button variant="secondary" onClick={() => void telechargerModele()} className="w-full">
               <Download aria-hidden /> Télécharger le modèle Excel
             </Button>
           </div>

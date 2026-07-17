@@ -1,14 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
 import { encoderBadge } from "@/lib/qr/badge";
+import { uuidSchema } from "@/lib/validation";
 
 /**
  * Génère les QR signés d'un lot d'élèves (par classe ou toute l'école).
  * La clé privée reste serveur ; la RLS borne la lecture à l'établissement.
  */
 export async function GET(request: NextRequest) {
-  const classeId = request.nextUrl.searchParams.get("classeId");
+  const classeIdBrut = request.nextUrl.searchParams.get("classeId");
+  if (classeIdBrut && !uuidSchema.safeParse(classeIdBrut).success) {
+    return NextResponse.json({ error: "classeId invalide" }, { status: 400 });
+  }
+  const classeId = classeIdBrut;
   const clePrivee = process.env.QR_SIGNING_PRIVATE_KEY;
   if (!clePrivee) return NextResponse.json({ error: "Signature non configurée" }, { status: 500 });
 
@@ -28,7 +34,10 @@ export async function GET(request: NextRequest) {
   if (classeId) requete = requete.eq("classe_id", classeId);
 
   const { data: eleves, error } = await requete;
-  if (error) return NextResponse.json({ error: "Lecture impossible" }, { status: 500 });
+  if (error) {
+    logger.error("badges: lecture eleves_detail echouee", { code: error.code ?? "?" });
+    return NextResponse.json({ error: "Lecture impossible" }, { status: 500 });
+  }
 
   const badges = await Promise.all(
     (eleves ?? []).map(async (e) => {

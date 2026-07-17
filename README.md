@@ -92,3 +92,15 @@ migrations (`supabase/migrations/`) et du seed (`supabase/seed.sql`).
   vérification hors-ligne. Format `SC1:<schoolId>:<studentId>:<signature>`.
 - **Scanner** : machine à états pure + adaptateurs (BarcodeDetector natif, ZXing
   pour Safari/iPhone) ; le verdict provient exclusivement du moteur (`ScanVerdict`).
+
+## Documentation
+
+| Document | Public |
+| --- | --- |
+| [`docs/INSTALL.md`](docs/INSTALL.md) | Installation en développement local |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Déploiement production + checklist |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture technique |
+| [`docs/ADMIN_GUIDE.md`](docs/ADMIN_GUIDE.md) | Guide de l'administrateur (école) |
+| [`docs/CANTEEN_AGENT_GUIDE.md`](docs/CANTEEN_AGENT_GUIDE.md) | Guide de l'agent de cantine |
+| [`docs/BACKUP.md`](docs/BACKUP.md) | Sauvegarde et restauration |
+| [`docs/UPDATE.md`](docs/UPDATE.md) | Procédure de mise à jour |

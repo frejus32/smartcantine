@@ -1,4 +1,3 @@
-import * as XLSX from "xlsx";
 import { creerEleve, type EleveFormulaire } from "@/services/gestion.service";
 import type { ClasseDetail, EleveDetail } from "@/services/moteur.service";
 
@@ -35,11 +34,12 @@ const ENTETES: Record<string, string> = {
   classe: "classe",
 };
 
-export function analyserFichier(
+export async function analyserFichier(
   buffer: ArrayBuffer,
   classes: ClasseDetail[],
   elevesExistants: EleveDetail[],
-): LigneImport[] {
+): Promise<LigneImport[]> {
+  const XLSX = await import("xlsx");
   const wb = XLSX.read(buffer, { type: "array" });
   const feuille = wb.Sheets[wb.SheetNames[0]];
   const lignes = XLSX.utils.sheet_to_json<Record<string, unknown>>(feuille, { defval: "" });
@@ -107,7 +107,8 @@ export async function importerLignes(lignes: LigneImport[]): Promise<ResultatImp
 }
 
 /** Génère un modèle Excel téléchargeable avec les bons en-têtes et un exemple. */
-export function genererModele(classes: ClasseDetail[]): Blob {
+export async function genererModele(classes: ClasseDetail[]): Promise<Blob> {
+  const XLSX = await import("xlsx");
   const exemple = [
     {
       matricule: "COL-0100",

@@ -3,6 +3,55 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement par sprint.
 Chaque entrée liste les nouveaux fichiers, les fichiers modifiés, les migrations et les commandes.
 
+## [1.0.0 — Production Ready] — 2026-07-17
+
+Sprint de durcissement pour la mise en production. **Aucune nouvelle
+fonctionnalité métier** : fiabilité, performance, sécurité, UX, documentation.
+
+### Performance
+- Chargement à la demande des libs lourdes : **jsPDF** et **jspdf-autotable**
+  (export PDF), **xlsx** (import/export Excel/CSV), **recharts** (graphiques via
+  `next/dynamic`), **ZXing** (repli caméra Safari) — chargés au premier usage.
+- Réductions de bundle : `/reports` **716 → 317 kB** (−56 %), `/scanner`
+  **450 → 327 kB**, `/students` **462 → 324 kB**, `/dashboard` **430 → 318 kB**.
+- Retrait de la dépendance directe `@supabase/supabase-js` (transitive via
+  `@supabase/ssr`).
+
+### Sécurité
+- En-têtes HTTP de sécurité sur toutes les routes (`next.config.ts`) :
+  `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+  `Strict-Transport-Security`, `Referrer-Policy`,
+  `Permissions-Policy` (caméra autorisée, micro/géoloc bloqués). `X-Powered-By`
+  retiré.
+- Validation d'entrée sur les routes API (`src/lib/validation.ts`) : UUID et
+  chemins Storage vérifiés (défense en profondeur, anti-remontée de répertoire),
+  en complément de la RLS.
+- Audit des secrets : clé privée QR confinée au serveur, aucune clé `service_role`
+  dans le code, `.env.local` gitignored et absent du dépôt.
+
+### Observabilité
+- Logger serveur structuré (`src/lib/logger.ts`) branché sur les routes API ;
+  aucune donnée personnelle ni secret journalisé.
+
+### Documentation
+- `docs/` : `INSTALL.md`, `DEPLOYMENT.md` (+ checklist de mise en production),
+  `ARCHITECTURE.md`, `ADMIN_GUIDE.md`, `CANTEEN_AGENT_GUIDE.md`, `BACKUP.md`
+  (sauvegarde/restauration), `UPDATE.md` (mise à jour). README enrichi.
+- Script `scripts/preflight.mjs` (`npm run preflight`) : portes de qualité en une
+  commande.
+
+### Audit & nettoyage
+- Aucun fichier orphelin, aucun `console.log` résiduel, aucune dépendance
+  réellement inutilisée. Index SQL couvrant tous les chemins chauds (vérifié par
+  `EXPLAIN` : lectures 100 % sur index, aucun *seq scan*).
+
+### Vérifications
+- build, lint, typecheck **verts**.
+- Tests : unitaires **9/9**, E2E scanner **13/13**, SQL RLS **7/7**, métier
+  **13/13**, opérations **8/8** — **aucune régression**.
+- Parcours pilote complet prouvé sous RLS : inscription → crédit (quota 10) →
+  scan (vert, solde 10→9) → refus 2e scan → dashboard/rapport/alertes à jour.
+
 ## [Sprint 5 — School Operations Suite] — 2026-07-17
 
 Grand sprint fonctionnel (ex-phases 5, 6, 7). SmartCantine devient utilisable en

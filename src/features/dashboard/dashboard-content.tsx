@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -13,15 +14,6 @@ import {
   Users,
   UtensilsCrossed,
 } from "lucide-react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,6 +32,11 @@ import {
   type StatsDashboard,
 } from "@/services/moteur.service";
 import { getInitials } from "@/utils/initials";
+
+const RepasAreaChart = dynamic(() => import("@/features/dashboard/repas-area-chart"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-64 w-full" />,
+});
 
 const STATUT_BADGE = {
   servi: { label: "Servi", variant: "success" as const },
@@ -164,43 +161,7 @@ export function DashboardContent() {
                 className="py-10"
               />
             ) : (
-              <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={serie} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-                    <defs>
-                      <linearGradient id="fillServis" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#1E5AA8" stopOpacity={0.18} />
-                        <stop offset="100%" stopColor="#1E5AA8" stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E6EC" vertical={false} />
-                    <XAxis
-                      dataKey="jour"
-                      tickLine={false}
-                      axisLine={false}
-                      tick={{ fontSize: 12, fill: "#6B7280" }}
-                    />
-                    <YAxis
-                      tickLine={false}
-                      axisLine={false}
-                      tick={{ fontSize: 12, fill: "#6B7280" }}
-                      width={40}
-                      allowDecimals={false}
-                    />
-                    <Tooltip
-                      contentStyle={{ borderRadius: 8, border: "1px solid #E2E6EC", fontSize: 13 }}
-                      formatter={(v) => [`${v} repas`, "Servis"]}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="servis"
-                      stroke="#1E5AA8"
-                      strokeWidth={2}
-                      fill="url(#fillServis)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+              <RepasAreaChart data={serie} />
             )}
           </CardContent>
         </Card>

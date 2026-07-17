@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   AlertTriangle,
   Ban,
@@ -10,17 +11,6 @@ import {
   UserX,
   Users,
 } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,8 +29,14 @@ import {
 } from "@/services/rapports.service";
 import { exporterCSV, exporterExcel, exporterPDF } from "@/services/export.service";
 
-const AXIS = { tickLine: false, axisLine: false, tick: { fontSize: 12, fill: "#6B7280" } } as const;
-const TOOLTIP = { borderRadius: 8, border: "1px solid #E2E6EC", fontSize: 13 } as const;
+const BarChartParClasse = dynamic(
+  () => import("@/features/reports/reports-charts").then((m) => m.BarChartParClasse),
+  { ssr: false, loading: () => <Skeleton className="h-64 w-full" /> },
+);
+const LineChartMensuel = dynamic(
+  () => import("@/features/reports/reports-charts").then((m) => m.LineChartMensuel),
+  { ssr: false, loading: () => <Skeleton className="h-64 w-full" /> },
+);
 
 const MOIS_NOMS = [
   "janvier",
@@ -106,7 +102,7 @@ export function ReportsContent() {
     else void chargerMensuel();
   }, [onglet, chargerQuotidien, chargerMensuel]);
 
-  function exporter(format: "pdf" | "excel" | "csv") {
+  async function exporter(format: "pdf" | "excel" | "csv") {
     if (onglet === "quotidien" && rq) {
       const lignes = [
         { Indicateur: "Élèves servis", Valeur: rq.servis },
@@ -116,10 +112,10 @@ export function ReportsContent() {
         { Indicateur: "Annulations", Valeur: rq.annules },
       ];
       const nom = `rapport-quotidien-${jour}`;
-      if (format === "csv") exporterCSV(lignes, nom);
-      else if (format === "excel") exporterExcel(lignes, nom, "Quotidien");
+      if (format === "csv") await exporterCSV(lignes, nom);
+      else if (format === "excel") await exporterExcel(lignes, nom, "Quotidien");
       else
-        exporterPDF(
+        await exporterPDF(
           "Rapport quotidien",
           `Journée du ${jour}`,
           ["Indicateur", "Valeur"],
@@ -135,10 +131,10 @@ export function ReportsContent() {
         { Indicateur: "À régulariser", Valeur: rm.a_regulariser },
       ];
       const nom = `rapport-mensuel-${annee}-${String(mois).padStart(2, "0")}`;
-      if (format === "csv") exporterCSV(lignes, nom);
-      else if (format === "excel") exporterExcel(lignes, nom, "Mensuel");
+      if (format === "csv") await exporterCSV(lignes, nom);
+      else if (format === "excel") await exporterExcel(lignes, nom, "Mensuel");
       else
-        exporterPDF(
+        await exporterPDF(
           "Rapport mensuel",
           `${MOIS_NOMS[mois - 1]} ${annee}`,
           ["Indicateur", "Valeur"],
@@ -217,13 +213,13 @@ export function ReportsContent() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" size="sm" onClick={() => exporter("pdf")}>
+        <Button variant="secondary" size="sm" onClick={() => void exporter("pdf")}>
           <FileText aria-hidden /> PDF
         </Button>
-        <Button variant="secondary" size="sm" onClick={() => exporter("excel")}>
+        <Button variant="secondary" size="sm" onClick={() => void exporter("excel")}>
           <FileSpreadsheet aria-hidden /> Excel
         </Button>
-        <Button variant="secondary" size="sm" onClick={() => exporter("csv")}>
+        <Button variant="secondary" size="sm" onClick={() => void exporter("csv")}>
           <FileSpreadsheet aria-hidden /> CSV
         </Button>
       </div>
@@ -283,21 +279,7 @@ export function ReportsContent() {
                   className="border-0 py-12"
                 />
               ) : (
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={parClasse} margin={{ top: 8, right: 8, bottom: 0, left: -24 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E6EC" vertical={false} />
-                      <XAxis dataKey="classe" {...AXIS} />
-                      <YAxis {...AXIS} allowDecimals={false} />
-                      <Tooltip
-                        cursor={{ fill: "#EAF1F9" }}
-                        contentStyle={TOOLTIP}
-                        formatter={(v) => [`${v} repas`, "Servis"]}
-                      />
-                      <Bar dataKey="servis" fill="#1E5AA8" radius={[6, 6, 0, 0]} maxBarSize={56} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                <BarChartParClasse data={parClasse} />
               )}
             </CardContent>
           </Card>
@@ -343,24 +325,7 @@ export function ReportsContent() {
                   className="border-0 py-12"
                 />
               ) : (
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={serie} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E6EC" vertical={false} />
-                      <XAxis dataKey="jour" {...AXIS} />
-                      <YAxis {...AXIS} allowDecimals={false} />
-                      <Tooltip contentStyle={TOOLTIP} formatter={(v) => [`${v} repas`, "Servis"]} />
-                      <Line
-                        type="monotone"
-                        dataKey="servis"
-                        stroke="#1E5AA8"
-                        strokeWidth={2}
-                        dot={false}
-                        activeDot={{ r: 4 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                <LineChartMensuel data={serie} />
               )}
             </CardContent>
           </Card>

@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
 import { encoderBadge } from "@/lib/qr/badge";
+import { uuidSchema } from "@/lib/validation";
 
 /**
  * Génère le QR signé d'un élève. La clé PRIVÉE reste côté serveur.
@@ -9,10 +11,11 @@ import { encoderBadge } from "@/lib/qr/badge";
  * (garanti par la RLS : la lecture échoue sinon).
  */
 export async function GET(request: NextRequest) {
-  const studentId = request.nextUrl.searchParams.get("studentId");
-  if (!studentId) {
-    return NextResponse.json({ error: "studentId requis" }, { status: 400 });
+  const parse = uuidSchema.safeParse(request.nextUrl.searchParams.get("studentId"));
+  if (!parse.success) {
+    return NextResponse.json({ error: "studentId invalide" }, { status: 400 });
   }
+  const studentId = parse.data;
 
   const clePrivee = process.env.QR_SIGNING_PRIVATE_KEY;
   if (!clePrivee) {
@@ -31,6 +34,7 @@ export async function GET(request: NextRequest) {
     .eq("id", studentId)
     .single();
   if (error || !eleve) {
+    logger.warn("badge: eleve introuvable", { studentId });
     return NextResponse.json({ error: "Élève introuvable" }, { status: 404 });
   }
 
