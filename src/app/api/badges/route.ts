@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
   }
   const classeId = classeIdBrut;
   const clePrivee = process.env.QR_SIGNING_PRIVATE_KEY;
+  console.log("QR_SIGNING_PRIVATE_KEY =", clePrivee);
+  console.log("Longueur =", clePrivee?.length);
   if (!clePrivee) return NextResponse.json({ error: "Signature non configurée" }, { status: 500 });
 
   const supabase = await createClient();
